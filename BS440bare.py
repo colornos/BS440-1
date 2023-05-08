@@ -82,7 +82,7 @@ def decodeWeight(handle, values):
     # To force results to be floats: devide by float.
     retDict["weight"] = data[1]/100.0
     retDict["timestamp"] = sanitize_timestamp(data[2])
-    retDict["person"] = data[3]
+    
     return retDict
 
 def sanitize_timestamp(timestamp):
@@ -118,30 +118,17 @@ def processIndication(handle, values):
     handle: byte (e.g. 0x26 for person, 0x1c for weight or 0x1f for body)
     values: bytearray (e.g. 0x845302800134b6e0000000000000000000000000)
     '''
-    if handle == handle_person:
-        result = decodePerson(handle, values)
-        if result not in persondata:
-            log.info(str(result))
-            persondata.append(result)
-        else:
-            log.info('Duplicate persondata record')
-    elif handle == handle_weight:
+
+    if handle == handle_weight:
         result = decodeWeight(handle, values)
         if result not in weightdata:
             log.info(str(result))
             weightdata.append(result)
         else:
             log.info('Duplicate weightdata record')
-    elif handle == handle_body:
-        result = decodeBody(handle, values)
-        if result not in bodydata:
-            log.info(str(result))
-            bodydata.append(result)
-        else:
-            log.info('Duplicate bodydata record')
+
     else:
         log.debug('Unhandled Indication encountered')
-
 
 def wait_for_device(devname):
     '''
@@ -321,7 +308,7 @@ while True:
 
                 log.info('Done receiving data from scale')
                 # process data if all received well
-                if persondata and weightdata and bodydata:
+                if weightdata:
                     # Sort scale output by timestamp to retrieve most recent three results
                     weightdatasorted = sorted(weightdata, key=lambda k: k['timestamp'], reverse=True)
 
