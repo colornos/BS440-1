@@ -45,27 +45,13 @@ def sanitize_timestamp(timestamp):
     return retTS
 
 def processIndication(handle, values):
-    if handle == handle_person:
-        result = decodePerson(handle, values)
-        if result not in persondata:
-            log.info(str(result))
-            persondata.append(result)
-        else:
-            log.info('Duplicate persondata record')
-    elif handle == handle_weight:
+    if handle == handle_weight:
         result = decodeWeight(handle, values)
         if result not in weightdata:
             log.info(str(result))
             weightdata.append(result)
         else:
             log.info('Duplicate weightdata record')
-    elif handle == handle_body:
-        result = decodeBody(handle, values)
-        if result not in bodydata:
-            log.info(str(result))
-            bodydata.append(result)
-        else:
-            log.info('Duplicate bodydata record')
     else:
         log.debug('Unhandled Indication encountered')
 
