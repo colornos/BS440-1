@@ -15,7 +15,7 @@ class Plugin:
     def __init__(self):
         return
 
-    def execute(self, config, persondata, weightdata, bodydata):
+    def execute(self, config, weightdata):
  #       self.persondata = persondata
  #       self.weightdata = weightdata
  #       self.bodydata = bodydata
