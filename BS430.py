@@ -205,7 +205,7 @@ def appendBmi(size, weightdata):
 
     def processIndication(handle, values):
         if handle == handle_weight:
-            result = decodeweight(handle, values)
+            result = decodeWeight(handle, values)
             if result not in weightdata:
                 log.info(str(result))
                 weightdata.append(result)
