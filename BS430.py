@@ -213,11 +213,8 @@ def processIndication(handle, values):
             log.info('Duplicate persondata record')
     elif handle == handle_weight:
         result = decodeWeight(handle, values)
-        if result not in weightdata:
-            log.info(str(result))
-            weightdata = [result]  # Update this line
-        else:
-            log.info('Duplicate weightdata record')
+        log.info(str(result))
+        weightdata = [result]  # Update this line
     elif handle == handle_body:
         result = decodeBody(handle, values)
         if result not in bodydata:
