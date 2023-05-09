@@ -427,7 +427,7 @@ while True:
                     device.disconnect()
                 except pygatt.exceptions.NotConnectedError:
                     log.info('Could not disconnect...')
-
+            
                 log.info('Done receiving data from scale')
                 # process data if all received well
                 if persondata and weightdata and bodydata:
@@ -435,9 +435,15 @@ while True:
                     weightdatasorted = sorted(weightdata, key=lambda k: k['timestamp'], reverse=True)
                     appendBmi(persondata[0]['size'], weightdata)
                     bodydatasorted = sorted(bodydata, key=lambda k: k['timestamp'], reverse=True)
-                    
-                    # Run all plugins found
+    
+                    # Run all plugins found, but only for the last weight scan
+                    last_weightdata = weightdatasorted[0] if weightdatasorted else None
+                    last_bodydata = bodydatasorted[0] if bodydatasorted else None
+
                     for plugin in plugins.values():
-                        plugin.execute(config, persondata, weightdatasorted, bodydatasorted)
+                        if last_weightdata and last_bodydata:
+                            plugin.execute(config, persondata, [last_weightdata], [last_bodydata])
+                        else:
+                            log.error('No data found for the last weight scan. Unable to process')
                 else:
                     log.error('Unreliable data received. Unable to process')
