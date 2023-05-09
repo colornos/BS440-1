@@ -19,7 +19,7 @@ Char_person = '00008a82-0000-1000-8000-00805f9b34fb'  # person data
 Char_weight = '00008a21-0000-1000-8000-00805f9b34fb'  # weight data
 Char_body = '00008a22-0000-1000-8000-00805f9b34fb'  # body data
 Char_command = '00008a81-0000-1000-8000-00805f9b34fb'  # command register
-
+process_once = True
 '''
 Information on the functions decodePerson, decodeWeight, decodeBody
 
@@ -374,6 +374,8 @@ while True:
             handle_body = device.get_handle(Char_body)
             handle_command = device.get_handle(Char_command)
             continue_comms = True
+            if process_once:
+                break
         except pygatt.exceptions.NotConnectedError:
             log.warning('Error getting handles')
             continue_comms = False
