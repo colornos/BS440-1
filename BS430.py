@@ -203,27 +203,16 @@ def appendBmi(size, weightdata):
         else:
             element['bmi'] = round(element['weight'] / (size * size), 1)
 
-def processIndication(handle, values):
-    if handle == handle_person:
-        result = decodePerson(handle, values)
-        if result not in persondata:
-            log.info(str(result))
-            persondata.append(result)
+    def processIndication(handle, values):
+        if handle == handle_weight:
+            result = decodeweight(handle, values)
+            if result not in weightdata:
+                log.info(str(result))
+                weightdata.append(result)
+            else:
+                log.info('Duplicate weightdata record')
         else:
-            log.info('Duplicate persondata record')
-    elif handle == handle_weight:
-        result = decodeWeight(handle, values)
-        log.info(str(result))
-        weightdata = [result]  # Update this line
-    elif handle == handle_body:
-        result = decodeBody(handle, values)
-        if result not in bodydata:
-            log.info(str(result))
-            bodydata.append(result)
-        else:
-            log.info('Duplicate bodydata record')
-    else:
-        log.debug('Unhandled Indication encountered')
+            log.debug('Unhandled Indication encountered')
 
 def wait_for_device(devname):
     '''
