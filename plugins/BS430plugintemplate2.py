@@ -16,7 +16,7 @@ class Plugin:
         # put any commands here you would like to be run to initialize your plugin
         return
 
-    def execute(self, globalconfig, last_weightdata):
+    def execute(self, globalconfig, persondata, weightdata, bodydata):
         # --- part of plugin skeleton
         # your plugin receives the config details from BS440.ini as well as
         # all the data received frm the scale
