@@ -1,4 +1,5 @@
-from __future__ import print_function
+import multiprocessing
+import sys
 import pygatt.backends
 import logging
 from configparser import ConfigParser
@@ -7,7 +8,10 @@ import subprocess
 from struct import *
 from binascii import hexlify
 import os
-import sys
+import threading
+from time import sleep
+import RPi.GPIO as GPIO
+from mfrc522 import SimpleMFRC522
 
 # Relevant characteristics submitted by the scale
 # (Explanation see below)
