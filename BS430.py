@@ -20,74 +20,6 @@ Char_weight = '00008a21-0000-1000-8000-00805f9b34fb'  # weight data
 Char_body = '00008a22-0000-1000-8000-00805f9b34fb'  # body data
 Char_command = '00008a81-0000-1000-8000-00805f9b34fb'  # command register
 
-'''
-Information on the functions decodePerson, decodeWeight, decodeBody
-
-The scale submits relevant data by use of Indications.
-Indications are messages conveying the data for certain characteristics.
-Characteristics have a two-byte shortcut for it (the handle) an a 16 byte
-(globally unique) identifier (the UUID).
-
-Relevant characteristics:
-Description Handle      UUID                                  Data
-            (2 byte)    (16 byte, globally unique)
-Person      0x26        00008a82-0000-1000-8000-00805f9b34fb  person, gender, age, size, activity
-Weight      0x1c        00008a21-0000-1000-8000-00805f9b34fb  weight, time, person
-Body        0x1f        00008a22-0000-1000-8000-00805f9b34fb  time, person, kcal, fat, tbw, muscle, bone 
-
-Writing the command 0200 to a handle tells the device that you register to the
-indications of this characteristic. Writing 0000 will stop it.
-
-A data packet of a characteristic (hex data string) will report with a
-handle 1 less than the handle of the characteristic. E.g. writing 0200
-to 0x26 (Person) will report back with the handle 0x25.
-
-The last 30 measurements per person will be stored in the scale and upon
-communication, the history for this user will be dumped. So you will
-receive 30 values like this: 
-handle=0x25, value=0x845302800134b6e0000000000000000000000000
-handle=0x1b, value=0x1d8c1e00fe6e0aa056451100ff020900000000
-handle=0x1e, value=0x6f6e0aa05602440ab8f07ff26bf11ef0000000
-
-To decode the scale values (from hex data strings), three separate functions
-are used. Each function receives the hex handle (e.g. 0x25) and bytevalues,
-and then returns a dictionary with the decoded data. The datastrings are
-interpreted using struct.unpack (see here https://docs.python.org/2/library/struct.html).
-'''
-
-def decodePerson(handle, values):
-    '''
-    decodePerson
-    Handle: 0x25 (Person)                
-    Value:
-        Byte  Data                         Value/Return   Interpretation pattern
-        0     fixed byte (validity check)  [0x84]         B (integer, lenght 1)
-        1     -pad byte-                                  x (pad byte)
-        2     person                       [1..8]         B ((integer, lenght 1)
-        3     -pad byte-                                  x (pad byte)
-        4     gender (1=male, 2=female)    [1|2]          B (integer, lenght 1)
-        5     age                          [0..255 years] B (integer, lenght 1)
-        6     size                         [0..255 cm]    B (integer, lenght 1)
-        7     -pad byte-                                  x (pad byte)
-        8     activity (0=normal, 3=high)  [0|3]          B (integer, lenght 1)
-        --> Interpretation pattern:                       BxBxBBBxB
-    '''
-    data = unpack('BxBxBBBxB', bytes(values[0:9]))
-    retDict = {}
-    retDict["valid"] = (data[0] == 0x84)
-    retDict["person"] = data[1]
-    if data[2] == 1:
-        retDict["gender"] = "male"
-    else:
-        retDict["gender"] = "female"
-    retDict["age"] = data[3]
-    retDict["size"] = data[4]
-    if data[5] == 3:
-        retDict["activity"] = "high"
-    else:
-        retDict["activity"] = "normal"
-    return retDict
-
 def decodeWeight(handle, values):
     '''
     decodeWeight
@@ -120,45 +52,6 @@ def decodeWeight(handle, values):
     retDict["person"] = data[3]
     return retDict
 
-def decodeBody(handle, values):
-    '''
-    decodeBody
-    Handle: 0x1e (Body)               
-    Value:
-        Byte  Data                          Value/Return       Interpretation pattern
-         0    fixed byte (validity check)   [0x6f]             B (integer, lenght 1)
-         1    timestamp                     Unix, date & time  I (integer, length 4)
-         2    timestamp              
-         3    timestamp                                 
-         4    timestamp
-         5    person                        [1..8]             B (integer, lenght 1)
-         6    kcal                          [0..65025 Kcal]    H (integer, length 2)
-         7    kcal
-         8    fat (percentage of body fat)  [0..100,0 %]       H (integer, length 2)
-         9    fat (percentage of body fat)
-        10    tbw (percentage of water)     [0..100,0 %]       H (integer, length 2)
-        11    tbw (percentage of water)
-        12    muscle (percentage of muscle) [0..100,0 %]       H (integer, length 2)
-        13    muscle (percentage of muscle)
-        14    bone (bone weight)            [0..100,0 %]       H (integer, length 2)
-        15    bone (bone weight)
-        --> Interpretation pattern:                            BIBBHHHHH
-    Notes: For kcal, fat, tbw, muscle, bone: First nibble = 0xf
-    '''
-    data = unpack('<BIBHHHHH', bytes(values[0:16]))
-    retDict = {}
-    retDict["valid"] = (data[0] == 0x6f)
-    retDict["timestamp"] = sanitize_timestamp(data[1])
-    retDict["person"] = data[2]
-    retDict["kcal"] = data[3]
-    # Fat, water, muscle and bone are reported in *10. Hence, divide by 10.0
-    # To force results to be floats: devide by float.
-    retDict["fat"] = (0x0fff & data[4])/10.0
-    retDict["tbw"] = (0x0fff & data[5])/10.0
-    retDict["muscle"] = (0x0fff & data[6])/10.0
-    retDict["bone"] = (0x0fff & data[7])/10.0
-    return retDict
-
 def sanitize_timestamp(timestamp):
     '''
     timestamp: timestamp of measurement transmitted by the scale
@@ -182,27 +75,6 @@ def sanitize_timestamp(timestamp):
         retTS = 0
     return retTS
 
-def appendBmi(size, weightdata):
-    '''
-    appendBMI: Calculates the BMI (not calculated/ provided by the scale itself).
-
-    size: size of the person (fixed), stored in the scale
-    weightdata: list of weights of the previous x measurements
-    '''
-    size = size / 100.00
-    for element in weightdata:
-        '''
-        Some scales (e.g. BS 444) identify the max. 8 users via a "weight approximation".
-        If a new (or guest) user stands on the scale, the scale is not able to identify the user.
-        As a result, no size for the user is stored in the scale, and thus not transmitted
-        to the script. In these situations, the script stopped (division by zero). The following
-        check aims at solving this problem (https://github.com/keptenkurk/BS440/issues/102)
-        '''
-        if size == 0:
-            element['bmi'] = 0
-        else:
-            element['bmi'] = round(element['weight'] / (size * size), 1)
-
 def processIndication(handle, values):
     '''
     Indication handler:
@@ -213,30 +85,15 @@ def processIndication(handle, values):
     handle: byte (e.g. 0x26 for person, 0x1c for weight or 0x1f for body)
     values: bytearray (e.g. 0x845302800134b6e0000000000000000000000000)
     '''
-    if handle == handle_person:
-        result = decodePerson(handle, values)
-        if result not in persondata:
-            log.info(str(result))
-            persondata.append(result)
-        else:
-            log.info('Duplicate persondata record')
-    elif handle == handle_weight:
+    if handle == handle_weight:
         result = decodeWeight(handle, values)
         if result not in weightdata:
             log.info(str(result))
             weightdata.append(result)
         else:
             log.info('Duplicate weightdata record')
-    elif handle == handle_body:
-        result = decodeBody(handle, values)
-        if result not in bodydata:
-            log.info(str(result))
-            bodydata.append(result)
-        else:
-            log.info('Duplicate bodydata record')
     else:
         log.debug('Unhandled Indication encountered')
-
 
 def wait_for_device(devname):
     '''
@@ -351,7 +208,7 @@ else:
 '''
 Start BLE comms and run that forever
 '''
-log.info('BS440 Started')
+log.info('BS430 Started')
 if not init_ble_mode():
     sys.exit()
 
@@ -364,14 +221,14 @@ while True:
     # If the device was connected successfully (the variable "device" has
     # been defined an contains the instance of the BLEDevice) the main loop runs
     if device:
-        persondata = []
+       
         weightdata = []
-        bodydata = []
+        
         try:
             # Get the two-byte shortcut (the handle)
-            handle_person = device.get_handle(Char_person)
+            
             handle_weight = device.get_handle(Char_weight)
-            handle_body = device.get_handle(Char_body)
+            
             handle_command = device.get_handle(Char_command)
             continue_comms = True
 
@@ -390,12 +247,7 @@ while True:
             device.subscribe(Char_weight,
                              callback=processIndication,
                              indication=True)
-            device.subscribe(Char_body,
-                             callback=processIndication,
-                             indication=True)
-            device.subscribe(Char_person,
-                             callback=processIndication,
-                             indication=True)
+
         except pygatt.exceptions.NotConnectedError:
             continue_comms = False
 
@@ -426,19 +278,16 @@ while True:
             
                 log.info('Done receiving data from scale')
                 # process data if all received well
-                if persondata and weightdata and bodydata:
+                if weightdata:
                     # Sort scale output by timestamp to retrieve most recent three results
                     weightdatasorted = sorted(weightdata, key=lambda k: k['timestamp'], reverse=True)
-                    appendBmi(persondata[0]['size'], weightdata)
-                    bodydatasorted = sorted(bodydata, key=lambda k: k['timestamp'], reverse=True)
-    
+                        
                     # Run all plugins found, but only for the last weight scan
                     last_weightdata = weightdatasorted[0] if weightdatasorted else None
-                    last_bodydata = bodydatasorted[0] if bodydatasorted else None
 
                     for plugin in plugins.values():
-                        if last_weightdata and last_bodydata:
-                            plugin.execute(config, persondata, [last_weightdata], [last_bodydata])
+                        if last_weightdata:
+                            plugin.execute(config, last_weightdata)
                         else:
                             log.error('No data found for the last weight scan. Unable to process')
                 else:
