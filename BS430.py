@@ -88,7 +88,6 @@ def decodePerson(handle, values):
         retDict["activity"] = "normal"
     return retDict
 
-
 def decodeWeight(handle, values):
     '''
     decodeWeight
@@ -120,7 +119,6 @@ def decodeWeight(handle, values):
     retDict["timestamp"] = sanitize_timestamp(data[2])
     retDict["person"] = data[3]
     return retDict
-
 
 def decodeBody(handle, values):
     '''
@@ -161,7 +159,6 @@ def decodeBody(handle, values):
     retDict["bone"] = (0x0fff & data[7])/10.0
     return retDict
 
-
 def sanitize_timestamp(timestamp):
     '''
     timestamp: timestamp of measurement transmitted by the scale
@@ -185,7 +182,6 @@ def sanitize_timestamp(timestamp):
         retTS = 0
     return retTS
 
-
 def appendBmi(size, weightdata):
     '''
     appendBMI: Calculates the BMI (not calculated/ provided by the scale itself).
@@ -206,7 +202,6 @@ def appendBmi(size, weightdata):
             element['bmi'] = 0
         else:
             element['bmi'] = round(element['weight'] / (size * size), 1)
-
 
 def processIndication(handle, values):
     if handle == handle_person:
@@ -247,7 +242,6 @@ def wait_for_device(devname):
             adapter.reset()
     return
 
-
 def connect_device(address):
     '''
     Connects to the scale defined by the MAC address (address).
@@ -267,7 +261,6 @@ def connect_device(address):
             tries -= 1
     return device
 
-
 def init_ble_mode():
     '''
     Activates Bluetooth LE
@@ -281,7 +274,6 @@ def init_ble_mode():
     else:
         log.info(err)
         return False
-
 
 '''
 Main program loop
@@ -345,7 +337,6 @@ elif device_model == 'BS444':
 else:
     addresstype = pygatt.BLEAddressType.random
     time_offset = 0
-
 
 '''
 Start BLE comms and run that forever
