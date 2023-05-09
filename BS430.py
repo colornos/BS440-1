@@ -1,3 +1,14 @@
+from __future__ import print_function
+import pygatt.backends
+import logging
+from configparser import ConfigParser
+import time
+import subprocess
+from struct import *
+from binascii import hexlify
+import os
+import sys
+
 # Relevant characteristics submitted by the scale
 # (Explanation see below)
 Char_person = '00008a82-0000-1000-8000-00805f9b34fb'  # person data
