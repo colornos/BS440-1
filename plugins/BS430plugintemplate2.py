@@ -46,7 +46,7 @@ class Plugin:
             print("No card detected!")
 
         else:
-            weight = last_weightdata[0]['weight']
+            weight = weightdata[0]['weight']
             headers = {
                 'User-Agent': 'RaspberryPi/BS430.py',
                 'Content-Type': 'application/x-www-form-urlencoded'
