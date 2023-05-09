@@ -107,7 +107,7 @@ Main program loop
 '''
 # Read .ini file and set plugins-folder
 config = ConfigParser()
-config.read('BS440.ini')
+config.read('BS430.ini')
 path = "plugins/"
 plugins = {}
 
@@ -168,7 +168,7 @@ else:
 '''
 Start BLE comms and run that forever
 '''
-log.info('BS440 Started')
+log.info('BS430 Started')
 if not init_ble_mode():
     sys.exit()
 
