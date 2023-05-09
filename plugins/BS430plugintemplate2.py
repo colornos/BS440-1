@@ -48,7 +48,7 @@ class Plugin:
         else:
             weight = last_weightdata[0]['weight']
             headers = {
-                'User-Agent': 'RaspberryPi/BS440.py',
+                'User-Agent': 'RaspberryPi/BS430.py',
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
             form_data = {'rfid': rfid, 'pin': pin, 'one': weight}
