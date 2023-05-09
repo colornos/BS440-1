@@ -180,7 +180,7 @@ def init_ble_mode():
 Main program loop
 '''
 
-config = SafeConfigParser()
+config = ConfigParser()
 config.read('BS440.ini')
 path = "plugins/"
 plugins = {}
