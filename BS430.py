@@ -209,15 +209,6 @@ def appendBmi(size, weightdata):
 
 
 def processIndication(handle, values):
-    '''
-    Indication handler:
-    Receives indication, decodes the information stored in the bytearray, and
-    stores values into result Dict (see decodePerson, decodeWeight and decodeBody
-    functions for Dict definition).
-     
-    handle: byte (e.g. 0x26 for person, 0x1c for weight or 0x1f for body)
-    values: bytearray (e.g. 0x845302800134b6e0000000000000000000000000)
-    '''
     if handle == handle_person:
         result = decodePerson(handle, values)
         if result not in persondata:
@@ -229,7 +220,7 @@ def processIndication(handle, values):
         result = decodeWeight(handle, values)
         if result not in weightdata:
             log.info(str(result))
-            weightdata.append(result)
+            weightdata = [result]  # Update this line
         else:
             log.info('Duplicate weightdata record')
     elif handle == handle_body:
@@ -241,7 +232,6 @@ def processIndication(handle, values):
             log.info('Duplicate bodydata record')
     else:
         log.debug('Unhandled Indication encountered')
-
 
 def wait_for_device(devname):
     '''
