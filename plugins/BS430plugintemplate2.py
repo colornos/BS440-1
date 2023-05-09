@@ -16,7 +16,7 @@ class Plugin:
         # put any commands here you would like to be run to initialize your plugin
         return
 
-    def execute(self, globalconfig, persondata, weightdata, bodydata):
+    def execute(self, globalconfig, persondata, last_weightdata, bodydatalast_bodydata):
         # --- part of plugin skeleton
         # your plugin receives the config details from BS440.ini as well as
         # all the data received frm the scale
@@ -46,7 +46,7 @@ class Plugin:
             print("No card detected!")
 
         else:
-            weight = weightdata[0]['weight']
+            weight = last_weightdata[0]['weight']
             headers = {
                 'User-Agent': 'RaspberryPi/BS440.py',
                 'Content-Type': 'application/x-www-form-urlencoded'
