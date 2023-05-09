@@ -13,20 +13,22 @@ http = urllib3.PoolManager()
 class Plugin:
 
     def __init__(self):
+        # put any commands here you would like to be run to initialize your plugin
         return
 
-    def execute(self, config, persondata, weightdata, bodydata):
- #       self.persondata = persondata
- #       self.weightdata = weightdata
- #       self.bodydata = bodydata
+    def execute(self, globalconfig, persondata, weightdata, bodydata):
         # --- part of plugin skeleton
+        # your plugin receives the config details from BS440.ini as well as
+        # all the data received frm the scale
         log = logging.getLogger(__name__)
         log.info('Starting plugin: ' + __name__)
-        # read ini file from same location as plugin resides, named [pluginname].ini
+        #read ini file from same location as plugin resides, named [pluginname].ini
         configfile = os.path.dirname(os.path.realpath(__file__)) + '/' + __name__ + '.ini'
-        pluginconfig = ConfigParser()
+        pluginconfig = SafeConfigParser()
         pluginconfig.read(configfile)
         log.info('ini read from: ' + configfile)
+        # Thats it! From here do your thing with the data.
+        # Be sure to catch and log errors if you're doing risky stuff
         # --- start plugin specifics here
         device = '104019001'
         f1 = open("rfid.txt", "r")
