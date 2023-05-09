@@ -204,15 +204,39 @@ def appendBmi(size, weightdata):
             element['bmi'] = round(element['weight'] / (size * size), 1)
 
 def processIndication(handle, values):
-        if handle == handle_weight:
-            result = decodeWeight(handle, values)
-            if result not in weightdata:
-                log.info(str(result))
-                weightdata.append(result)
-            else:
-                log.info('Duplicate weightdata record')
+    '''
+    Indication handler:
+    Receives indication, decodes the information stored in the bytearray, and
+    stores values into result Dict (see decodePerson, decodeWeight and decodeBody
+    functions for Dict definition).
+     
+    handle: byte (e.g. 0x26 for person, 0x1c for weight or 0x1f for body)
+    values: bytearray (e.g. 0x845302800134b6e0000000000000000000000000)
+    '''
+    if handle == handle_person:
+        result = decodePerson(handle, values)
+        if result not in persondata:
+            log.info(str(result))
+            persondata.append(result)
         else:
-            log.debug('Unhandled Indication encountered')
+            log.info('Duplicate persondata record')
+    elif handle == handle_weight:
+        result = decodeWeight(handle, values)
+        if result not in weightdata:
+            log.info(str(result))
+            weightdata.append(result)
+        else:
+            log.info('Duplicate weightdata record')
+    elif handle == handle_body:
+        result = decodeBody(handle, values)
+        if result not in bodydata:
+            log.info(str(result))
+            bodydata.append(result)
+        else:
+            log.info('Duplicate bodydata record')
+    else:
+        log.debug('Unhandled Indication encountered')
+
 
 def wait_for_device(devname):
     '''
