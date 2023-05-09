@@ -203,7 +203,7 @@ def appendBmi(size, weightdata):
         else:
             element['bmi'] = round(element['weight'] / (size * size), 1)
 
-    def processIndication(handle, values):
+def processIndication(handle, values):
         if handle == handle_weight:
             result = decodeWeight(handle, values)
             if result not in weightdata:
