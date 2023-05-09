@@ -294,7 +294,7 @@ Main program loop
 '''
 # Read .ini file and set plugins-folder
 config = ConfigParser()
-config.read('BS440.ini')
+config.read('BS430.ini')
 path = "plugins/"
 plugins = {}
 
